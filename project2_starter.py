@@ -62,7 +62,7 @@ def load_listing_results(html_path) -> list[tuple]:
         
         listing_results.append((title, listing_id))
 
-    print(listing_results)    
+  
     return listing_results
    
     # ==============================
@@ -93,7 +93,16 @@ def get_listing_details(listing_id) -> dict:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    pass
+    #open file
+    #make beautiful soup object
+    #extract each field
+    #build dictionary
+    #return dict
+    with open(f"html_files/listing_{listing_id}.html", 'r', encoding="utf-8-sig") as file:
+        content = file.read()
+        soup = BeautifulSoup(content, 'html.parser')
+
+    
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
@@ -224,6 +233,9 @@ class TestCases(unittest.TestCase):
         html_list = ["467507", "1550913", "1944564", "4614763", "6092596"]
 
         # TODO: Call get_listing_details() on each listing id above and save results in a list.
+        details = []
+        for id in html_list:
+            details.append(get_listing_details(id))
 
         # TODO: Spot-check a few known values by opening the corresponding listing_<id>.html files.
         # 1) Check that listing 467507 has the correct policy number "STR-0005349".
