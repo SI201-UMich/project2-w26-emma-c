@@ -53,7 +53,6 @@ def load_listing_results(html_path) -> list[tuple]:
 
     listing_results = []
 
-    print(len(listings))
     for listing in listings:
         
         title = listing.get_text().strip()
@@ -93,18 +92,44 @@ def get_listing_details(listing_id) -> dict:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    #open file
-    #make beautiful soup object
-    #extract each field
-    #build dictionary
-    #return dict
+    #open file (+)
+    #make beautiful soup object (+)
+    #extract each field (-)
+    #
+    #build dictionary (-)
+    #return dict (-)
+    # path = os.path.join("html_files")
+    # with open(f"../../{path}/listing_{listing_id}.html", 'r', encoding="utf-8-sig") as file:
     with open(f"html_files/listing_{listing_id}.html", 'r', encoding="utf-8-sig") as file:
         content = file.read()
         soup = BeautifulSoup(content, 'html.parser')
+    #ul class="fhhmddr dir dir-ltr"
+    unordered_list = soup.find('ul', class_="fhhmddr dir dir-ltr")
+    list_items = unordered_list.find_all('span', class_="ll4r2nl dir dir-ltr")
+    policy_number = list_items[0].text
 
-    
+    print(soup.find('ul', class_="tq6hspd h1aqtv1m dir dir-ltr").find_all('li')[2].find('span', class_="l1dfad8f dir dir-ltr").text)    
+
+
+    print(unordered_list)
+
     # ==============================
     # YOUR CODE ENDS HERE
+    '''
+    <div class="ciubx2o dir dir-ltr">
+    
+    <span class="l1dfad8f dir dir-ltr">Identity verified</span>
+    
+    <span class="l1dfad8f dir dir-ltr">Superhost</span>
+    
+    <h3 tabindex="-1" class="_14i3z6h" elementtiming="LCP-target">Jennifer is a Superhost</h3></div>
+    
+    <li class="f19phm7j dir dir-ltr">Policy number: <span class="ll4r2nl dir dir-ltr">STR-0005349</span>
+    
+    <li class="f19phm7j dir dir-ltr">Response rate: <span class="ll4r2nl dir dir-ltr">100%</span></li>
+    
+    <li class="f19phm7j dir dir-ltr">Response time: <span class="ll4r2nl dir dir-ltr">within an hour</span></li>
+    '''
     # ==============================
 
 
@@ -224,10 +249,10 @@ class TestCases(unittest.TestCase):
         self.listings = load_listing_results(self.search_results_path)
         self.detailed_data = create_listing_database(self.search_results_path)
 
-    def test_load_listing_results(self):
+    # def test_load_listing_results(self):
         # TODO: Check that the number of listings extracted is 18.
         # TODO: Check that the FIRST (title, id) tuple is  ("Loft in Mission District", "1944564").
-        pass
+        # pass
 
     def test_get_listing_details(self):
         html_list = ["467507", "1550913", "1944564", "4614763", "6092596"]
@@ -243,35 +268,36 @@ class TestCases(unittest.TestCase):
         # 3) Check that listing 1944564 has the correct location rating 4.9.
         pass
 
-    def test_create_listing_database(self):
+    # def test_create_listing_database(self):
         # TODO: Check that each tuple in detailed_data has exactly 7 elements:
         # (listing_title, listing_id, policy_number, host_type, host_name, room_type, location_rating)
 
         # TODO: Spot-check the LAST tuple is ("Guest suite in Mission District", "467507", "STR-0005349", "Superhost", "Jennifer", "Entire Room", 4.8).
-        pass
+        # pass
 
-    def test_output_csv(self):
-        out_path = os.path.join(self.base_dir, "test.csv")
+    # def test_output_csv(self):
+        # out_path = os.path.join(self.base_dir, "test.csv")
 
         # TODO: Call output_csv() to write the detailed_data to a CSV file.
         # TODO: Read the CSV back in and store rows in a list.
         # TODO: Check that the first data row matches ["Guesthouse in San Francisco", "49591060", "STR-0000253", "Superhost", "Ingrid", "Entire Room", "5.0"].
 
-        os.remove(out_path)
+        # os.remove(out_path)
 
-    def test_avg_location_rating_by_room_type(self):
+    # def test_avg_location_rating_by_room_type(self):
         # TODO: Call avg_location_rating_by_room_type() and save the output.
         # TODO: Check that the average for "Private Room" is 4.9.
-        pass
+        # pass
 
-    def test_validate_policy_numbers(self):
+    # def test_validate_policy_numbers(self):
         # TODO: Call validate_policy_numbers() on detailed_data and save the result into a variable invalid_listings.
         # TODO: Check that the list contains exactly "16204265" for this dataset.
-        pass
+        # pass
 
 
 def main():
     detailed_data = create_listing_database(os.path.join("html_files", "search_results.html"))
+    # get_listing_details("467507")
     output_csv(detailed_data, "airbnb_dataset.csv")
 
 
