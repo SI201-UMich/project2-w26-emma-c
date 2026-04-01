@@ -98,38 +98,60 @@ def get_listing_details(listing_id) -> dict:
     #
     #build dictionary (-)
     #return dict (-)
-    # path = os.path.join("html_files")
-    # with open(f"../../{path}/listing_{listing_id}.html", 'r', encoding="utf-8-sig") as file:
     with open(f"html_files/listing_{listing_id}.html", 'r', encoding="utf-8-sig") as file:
         content = file.read()
         soup = BeautifulSoup(content, 'html.parser')
+
     #ul class="fhhmddr dir dir-ltr"
-    unordered_list = soup.find('ul', class_="fhhmddr dir dir-ltr")
-    list_items = unordered_list.find_all('span', class_="ll4r2nl dir dir-ltr")
-    policy_number = list_items[0].text
+    # get the unordered list that contains the policy number with a the unique class
+    unordered_list = soup.find('ul', class_="fhhmddr dir dir-ltr") 
 
-    print(soup.find('ul', class_="tq6hspd h1aqtv1m dir dir-ltr").find_all('li')[2].find('span', class_="l1dfad8f dir dir-ltr").text)    
+    # policy number is first in the list and is contained in a span
+    spans = unordered_list.find_all('span', class_="ll4r2nl dir dir-ltr")
+    policy_number = spans[0].text 
 
+    # what I did above, just in one line for hist type
+    host_type = soup.find('ul', class_="tq6hspd h1aqtv1m dir dir-ltr").find_all('li')[2].find('span', class_="l1dfad8f dir dir-ltr").text
 
-    print(unordered_list)
+    # getting host name, and removing "Hosted by" to get just the name(s)
+    host_name = soup.find('div', class_="tehcqxo dir dir-ltr").find('h2').text.replace("Hosted by ", "").strip()
+
+    # assigning room type based on the listing subtitle
+    room_type_str = soup.find('div', class_="_cv5qq4").find('h2').text
+    if "Entire" in room_type_str:
+        room_type = "Entire room"
+    elif "Private" in room_type_str:
+        room_type = "Private room"
+    else:
+        room_type = "Shared room"
+    
+    # finding location rating if there is one, otherwise set to 0.0
+    # find the unique div class that holds location, get the list of divs thats inside, 
+    # find the span that holds the rating
+    # get the text inside the span, and remove all whitespaces and newlines only get the rating
+    divs = soup.find('div', class_="r1f90fvr dir dir-ltr").find_all('div', class_="rjiv01r dir dir-ltr")[3].find('span', class_="_4oybiu").get_text().split()[0]
+    if divs is not None:
+        location_rating_str = divs
+        location_rating = float(location_rating_str)
+    else:
+        location_rating = 0.0
+
+    # making nested dictionary with listing_id as key and details as values
+    details_dict = {}
+
+    details_dict[listing_id] = {
+        "policy_number": policy_number,
+        "host_type": host_type,
+        "host_name": host_name,
+        "room_type": room_type,
+        "location_rating": location_rating
+    }
+
+    print(details_dict)
+    return details_dict
 
     # ==============================
     # YOUR CODE ENDS HERE
-    '''
-    <div class="ciubx2o dir dir-ltr">
-    
-    <span class="l1dfad8f dir dir-ltr">Identity verified</span>
-    
-    <span class="l1dfad8f dir dir-ltr">Superhost</span>
-    
-    <h3 tabindex="-1" class="_14i3z6h" elementtiming="LCP-target">Jennifer is a Superhost</h3></div>
-    
-    <li class="f19phm7j dir dir-ltr">Policy number: <span class="ll4r2nl dir dir-ltr">STR-0005349</span>
-    
-    <li class="f19phm7j dir dir-ltr">Response rate: <span class="ll4r2nl dir dir-ltr">100%</span></li>
-    
-    <li class="f19phm7j dir dir-ltr">Response time: <span class="ll4r2nl dir dir-ltr">within an hour</span></li>
-    '''
     # ==============================
 
 
@@ -266,23 +288,27 @@ class TestCases(unittest.TestCase):
         # 1) Check that listing 467507 has the correct policy number "STR-0005349".
         # 2) Check that listing 1944564 has the correct host type "Superhost" and room type "Entire Room".
         # 3) Check that listing 1944564 has the correct location rating 4.9.
-        pass
+        self.assertEqual(details[0]["467507"]["policy_number"], "STR-0005349")
+        self.assertEqual(details[2]["1944564"]["host_type"], "Superhost")
+        self.assertEqual(details[2]["1944564"]["room_type"], "Entire room")
+        self.assertEqual(details[2]["1944564"]["location_rating"], 4.9)
 
-    # def test_create_listing_database(self):
+
+    def test_create_listing_database(self):
         # TODO: Check that each tuple in detailed_data has exactly 7 elements:
         # (listing_title, listing_id, policy_number, host_type, host_name, room_type, location_rating)
 
         # TODO: Spot-check the LAST tuple is ("Guest suite in Mission District", "467507", "STR-0005349", "Superhost", "Jennifer", "Entire Room", 4.8).
-        # pass
+        pass
 
-    # def test_output_csv(self):
-        # out_path = os.path.join(self.base_dir, "test.csv")
+    def test_output_csv(self):
+        out_path = os.path.join(self.base_dir, "test.csv")
 
         # TODO: Call output_csv() to write the detailed_data to a CSV file.
         # TODO: Read the CSV back in and store rows in a list.
         # TODO: Check that the first data row matches ["Guesthouse in San Francisco", "49591060", "STR-0000253", "Superhost", "Ingrid", "Entire Room", "5.0"].
 
-        # os.remove(out_path)
+        os.remove(out_path)
 
     # def test_avg_location_rating_by_room_type(self):
         # TODO: Call avg_location_rating_by_room_type() and save the output.
