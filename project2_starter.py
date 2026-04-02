@@ -55,9 +55,9 @@ def load_listing_results(html_path) -> list[tuple]:
 
     for listing in listings:
         
-        title = listing.get_text().strip()
+        title = ' '.join(listing.get_text().split())
 
-        listing_id = listing["id"].replace("title_", "")
+        listing_id = listing["id"].replace("title_", "").strip()
         
         listing_results.append((title, listing_id))
 
@@ -92,12 +92,7 @@ def get_listing_details(listing_id) -> dict:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    #open file (+)
-    #make beautiful soup object (+)
-    #extract each field (-)
-    #
-    #build dictionary (-)
-    #return dict (-)
+    
     with open(f"html_files/listing_{listing_id}.html", 'r', encoding="utf-8-sig") as file:
         content = file.read()
         soup = BeautifulSoup(content, 'html.parser')
@@ -108,29 +103,36 @@ def get_listing_details(listing_id) -> dict:
 
     # policy number is first in the list and is contained in a span
     spans = unordered_list.find_all('span', class_="ll4r2nl dir dir-ltr")
-    policy_number = spans[0].text 
+    policy_number = spans[0].text.split()[0].strip() 
 
-    # what I did above, just in one line for hist type
-    host_type = soup.find('ul', class_="tq6hspd h1aqtv1m dir dir-ltr").find_all('li')[2].find('span', class_="l1dfad8f dir dir-ltr").text
+    # host type is the third item in the unordered list with a unique class, but some listings dont have a host type so i check if there are more than 2 items in the list before trying to access it
+    # print(soup.find('ul', class_="tq6hspd h1aqtv1m dir dir-ltr").find_all('li'))
+    host_type = soup.find('ul', class_="tq6hspd h1aqtv1m dir dir-ltr").find_all('li')
+    if len(host_type) > 2:
+        host_type = host_type[2].find('span', class_="l1dfad8f dir dir-ltr").text
+    else:
+        #some of the listings dont have a host type so i just set it to regular host
+        host_type = "Regular"
 
     # getting host name, and removing "Hosted by" to get just the name(s)
     host_name = soup.find('div', class_="tehcqxo dir dir-ltr").find('h2').text.replace("Hosted by ", "").strip()
 
     # assigning room type based on the listing subtitle
-    room_type_str = soup.find('div', class_="_cv5qq4").find('h2').text
+    room_type_str = soup.find('div', class_="_tqmy57").get_text().strip()
     if "Entire" in room_type_str:
         room_type = "Entire room"
     elif "Private" in room_type_str:
         room_type = "Private room"
     else:
         room_type = "Shared room"
-    
+    #print(room_type)
     # finding location rating if there is one, otherwise set to 0.0
     # find the unique div class that holds location, get the list of divs thats inside, 
     # find the span that holds the rating
     # get the text inside the span, and remove all whitespaces and newlines only get the rating
-    divs = soup.find('div', class_="r1f90fvr dir dir-ltr").find_all('div', class_="rjiv01r dir dir-ltr")[3].find('span', class_="_4oybiu").get_text().split()[0]
+    divs = soup.find('div', class_="r1f90fvr dir dir-ltr")
     if divs is not None:
+        divs = divs.find_all('div', class_="rjiv01r dir dir-ltr")[3].find('span', class_="_4oybiu").get_text().split()[0]
         location_rating_str = divs
         location_rating = float(location_rating_str)
     else:
@@ -147,7 +149,6 @@ def get_listing_details(listing_id) -> dict:
         "location_rating": location_rating
     }
 
-    print(details_dict)
     return details_dict
 
     # ==============================
@@ -170,7 +171,24 @@ def create_listing_database(html_path) -> list[tuple]:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    pass
+    listing_title_id = load_listing_results(html_path)
+
+    listing_database = []
+
+    for listing in listing_title_id:
+        listing_title = listing[0]
+        listing_id = str(listing[1])
+        details = get_listing_details(listing_id)
+        policy_number = details[listing_id]["policy_number"]
+        host_type = details[listing_id]["host_type"]
+        host_name = details[listing_id]["host_name"]
+        room_type = details[listing_id]["room_type"]
+        location_rating = details[listing_id]["location_rating"]
+
+        listing_tuple = (listing_title, listing_id, policy_number, host_type, host_name, room_type, location_rating)
+        listing_database.append(listing_tuple)
+    
+    return listing_database
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
