@@ -120,11 +120,11 @@ def get_listing_details(listing_id) -> dict:
     # assigning room type based on the listing subtitle
     room_type_str = soup.find('div', class_="_tqmy57").get_text().strip()
     if "Entire" in room_type_str:
-        room_type = "Entire room"
+        room_type = "Entire Room"
     elif "Private" in room_type_str:
-        room_type = "Private room"
+        room_type = "Private Room"
     else:
-        room_type = "Shared room"
+        room_type = "Shared Room"
     #print(room_type)
     # finding location rating if there is one, otherwise set to 0.0
     # find the unique div class that holds location, get the list of divs thats inside, 
@@ -211,7 +211,16 @@ def output_csv(data, filename) -> None:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    pass
+    try:
+        with open(filename, 'w', newline='', encoding="utf-8-sig") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["listing_title", "listing_id", "policy_number", "host_type", "host_name", "room_type", "location_rating"])
+            sorted_data = sorted(data, key=lambda x: x[6], reverse=True)
+            for row in sorted_data:
+                writer.writerow(row)
+    except:
+        print("Error writing to CSV file.")
+    
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
@@ -308,30 +317,41 @@ class TestCases(unittest.TestCase):
         # 3) Check that listing 1944564 has the correct location rating 4.9.
         self.assertEqual(details[0]["467507"]["policy_number"], "STR-0005349")
         self.assertEqual(details[2]["1944564"]["host_type"], "Superhost")
-        self.assertEqual(details[2]["1944564"]["room_type"], "Entire room")
+        self.assertEqual(details[2]["1944564"]["room_type"], "Entire Room")
         self.assertEqual(details[2]["1944564"]["location_rating"], 4.9)
 
 
     def test_create_listing_database(self):
         # TODO: Check that each tuple in detailed_data has exactly 7 elements:
         # (listing_title, listing_id, policy_number, host_type, host_name, room_type, location_rating)
+        for listing in self.detailed_data:
+            self.assertEqual(len(listing), 7)
 
         # TODO: Spot-check the LAST tuple is ("Guest suite in Mission District", "467507", "STR-0005349", "Superhost", "Jennifer", "Entire Room", 4.8).
-        pass
+        self.assertEqual(self.detailed_data[-1], ("Guest suite in Mission District", "467507", "STR-0005349", "Superhost", "Jennifer", "Entire Room", 4.8))
 
     def test_output_csv(self):
         out_path = os.path.join(self.base_dir, "test.csv")
 
         # TODO: Call output_csv() to write the detailed_data to a CSV file.
+        output_csv(self.detailed_data, out_path)
+
         # TODO: Read the CSV back in and store rows in a list.
+        with open(out_path, 'r', encoding="utf-8-sig") as file:
+            reader = csv.reader(file)
+            rows = list(reader)
+
         # TODO: Check that the first data row matches ["Guesthouse in San Francisco", "49591060", "STR-0000253", "Superhost", "Ingrid", "Entire Room", "5.0"].
+        self.assertEqual(rows[1], ["Guesthouse in San Francisco", "49591060", "STR-0000253", "Superhost", "Ingrid", "Entire Room", "5.0"])
 
         os.remove(out_path)
 
-    # def test_avg_location_rating_by_room_type(self):
+    def test_avg_location_rating_by_room_type(self):
         # TODO: Call avg_location_rating_by_room_type() and save the output.
+        avg_ratings = avg_location_rating_by_room_type(self.detailed_data)
+
         # TODO: Check that the average for "Private Room" is 4.9.
-        # pass
+        self.assertEqual(avg_ratings["Private Room"], 4.9)
 
     # def test_validate_policy_numbers(self):
         # TODO: Call validate_policy_numbers() on detailed_data and save the result into a variable invalid_listings.
