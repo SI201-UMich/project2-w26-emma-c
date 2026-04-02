@@ -243,7 +243,22 @@ def avg_location_rating_by_room_type(data) -> dict:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    pass
+    avg_dict = {}
+    
+    for listing in data:
+        room_type = listing[5]
+        location_rating = float(listing[6])
+        if location_rating != 0.0:
+            if room_type not in avg_dict:
+                avg_dict[room_type] = location_rating
+            else:
+                avg_dict[room_type] += location_rating
+    
+    for room_type in avg_dict:
+        count = sum(1 for listing in data if listing[5] == room_type and listing[6] != 0.0)
+        avg_dict[room_type] = round(avg_dict[room_type] / count, 1)
+    
+    return avg_dict
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
@@ -264,7 +279,22 @@ def validate_policy_numbers(data) -> list[str]:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    pass
+    invalid_listings = []
+    for listing in data:
+        listing_id = listing[1]
+        policy_number = listing[2]
+        valid_pattern = r"^\S+-.+" # pattern for valid policy numbers, basically checks that there is some non-whitespace characters followed by a dash and more characters after
+        if policy_number.capitalize() == "Pending" or policy_number == "Exempt":
+            continue
+
+        elif not re.match(valid_pattern, policy_number):
+            invalid_listings.append(listing_id)
+
+        else:
+            continue
+
+    return invalid_listings
+
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
@@ -298,10 +328,11 @@ class TestCases(unittest.TestCase):
         self.listings = load_listing_results(self.search_results_path)
         self.detailed_data = create_listing_database(self.search_results_path)
 
-    # def test_load_listing_results(self):
+    def test_load_listing_results(self):
         # TODO: Check that the number of listings extracted is 18.
+        self.assertEqual(len(self.listings), 18)
         # TODO: Check that the FIRST (title, id) tuple is  ("Loft in Mission District", "1944564").
-        # pass
+        self.assertEqual(self.listings[0], ("Loft in Mission District", "1944564"))
 
     def test_get_listing_details(self):
         html_list = ["467507", "1550913", "1944564", "4614763", "6092596"]
@@ -353,17 +384,18 @@ class TestCases(unittest.TestCase):
         # TODO: Check that the average for "Private Room" is 4.9.
         self.assertEqual(avg_ratings["Private Room"], 4.9)
 
-    # def test_validate_policy_numbers(self):
+    def test_validate_policy_numbers(self):
         # TODO: Call validate_policy_numbers() on detailed_data and save the result into a variable invalid_listings.
+        invalid_listings = validate_policy_numbers(self.detailed_data)
+
         # TODO: Check that the list contains exactly "16204265" for this dataset.
-        # pass
+        self.assertEqual(invalid_listings, ["16204265"])
 
 
 def main():
     detailed_data = create_listing_database(os.path.join("html_files", "search_results.html"))
     # get_listing_details("467507")
     output_csv(detailed_data, "airbnb_dataset.csv")
-
 
 if __name__ == "__main__":
     main()
