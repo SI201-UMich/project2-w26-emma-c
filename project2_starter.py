@@ -9,6 +9,7 @@
 # Asked ChatGPT for hints on debugging and for suggestions on overall code structure, and also for a list of functions that I might need for get_listing_details() 
 # I then used those suggestions to guide my implementation of those functions, but I did not copy any code directly from ChatGPT.
 #
+#
 # Did your use of GenAI on this assignment align with your goals and guidelines in your Gen AI contract? If not, why?
 #
 # --- ARGUMENTS & EXPECTED RETURN VALUES PROVIDED --- #
